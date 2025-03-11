@@ -4,26 +4,29 @@ using UnityEngine;
 
 public class TimeBody : MonoBehaviour
 {
-    bool isRewinding = false;
+    public bool isRewinding = false;
+    //public float recordTime = 5f;
+    public List<PointInTime> pointsInTime;
+    public List<PointInTime> pointsInTimeFromBegin;
 
-    public float recordTime = 5f;
+    private Rigidbody2D rb;
 
-    List<PointInTime> pointsInTime;
-
-    Rigidbody2D rb;
-
+    private void OnEnable()
+    {
+        TimeRewindController.StartRewindEvent += StartRewind;
+        TimeRewindController.StopRewindEvent += StopRewind;
+    }
+    private void OnDisable()
+    {
+        TimeRewindController.StartRewindEvent -= StartRewind;
+        TimeRewindController.StopRewindEvent -= StopRewind;
+    }
     void Start()
     {
         pointsInTime = new List<PointInTime>();
-        rb = GetComponent<Rigidbody2D>();
-    }
+        pointsInTimeFromBegin = new List<PointInTime>();
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Return))
-            StartRewind();
-        if (Input.GetKeyUp(KeyCode.Return))
-            StopRewind();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void FixedUpdate()
@@ -47,12 +50,11 @@ public class TimeBody : MonoBehaviour
         {
             StopRewind();
         }
-
     }
 
     void Record()
     {
-        if (pointsInTime.Count > Mathf.Round(recordTime / Time.fixedDeltaTime))
+        if (pointsInTime.Count > Mathf.Round(TimeRewindController.Instance.recordTime / Time.fixedDeltaTime))
         {
             pointsInTime.RemoveAt(pointsInTime.Count - 1);
         }
