@@ -1,16 +1,18 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TimeBody : MonoBehaviour
 {
-    public bool isRewinding = false;
-    //public float recordTime = 5f;
+    public bool isPlayer = false;
+
     public List<PointInTime> pointsInTime;
     public List<PointInTime> pointsInTimeFromBegin;
-
+    
+    private bool isRewinding = false;
     private Rigidbody2D rb;
-
+    private Action<TimeBody> callBack;
     private void OnEnable()
     {
         TimeRewindController.StartRewindEvent += StartRewind;
@@ -32,9 +34,13 @@ public class TimeBody : MonoBehaviour
     void FixedUpdate()
     {
         if (isRewinding)
+        {
             Rewind();
+        }    
         else
+        {
             Record();
+        }
     }
 
     void Rewind()
@@ -60,17 +66,23 @@ public class TimeBody : MonoBehaviour
         }
 
         pointsInTime.Insert(0, new PointInTime(transform.position, transform.rotation));
+        pointsInTimeFromBegin.Insert(0, new PointInTime(transform.position, transform.rotation));
     }
 
-    public void StartRewind()
+    public void StartRewind(Action<TimeBody> _callBack = null)
     {
         isRewinding = true;
         rb.isKinematic = true;
+
+        callBack = _callBack;
     }
 
-    public void StopRewind()
+    public void StopRewind(Action<TimeBody> _callBack = null)
     {
         isRewinding = false;
         rb.isKinematic = false;
+
+        if (isPlayer)
+            callBack?.Invoke(this);
     }
 }
